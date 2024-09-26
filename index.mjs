@@ -1,10 +1,15 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import { createServer } from 'http';
+import { WebSocketServer } from 'ws';
 import subscribeRouter from './routes/subscribe.mjs';
 import alertRouter from './routes/alert.mjs';
 
 const app = express();
+const server = createServer(app);
+const wss = new WebSocketServer({ server });
+
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
@@ -21,12 +26,29 @@ const connectDB = async () => {
 
 connectDB();
 
+// WebSocket connection handler
+wss.on('connection', (ws) => {
+  console.log('Client connected');
+  ws.on('close', () => console.log('Client disconnected'));
+});
+
+// Broadcast function
+const broadcast = (message) => {
+  wss.clients.forEach((client) => {
+    client.send(JSON.stringify(message));
+  });
+};
+
 app.use('/api/subscribe', subscribeRouter);
-app.use('/api/alert', alertRouter);
+app.use('/api/alert', (req, res, next) => {
+  req.broadcast = broadcast;
+  next();
+}, alertRouter);
+
 app.use('/', (req, res) => {
   res.send('Server is running').status(200);
-})
+});
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

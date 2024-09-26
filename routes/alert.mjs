@@ -1,13 +1,16 @@
 import express from 'express';
-import Subscriber from '../schema/subscriber.mjs';
+import Subscriber from '../models/subscriber.mjs';
 
 const router = express.Router();
 
 router.post('/', async (req, res) => {
   try {
     const subscribers = await Subscriber.find();
-    // In a real-world scenario, you would send actual notifications here
-    // For this prototype, we'll just log the subscribers
+    const message = 'New alert!'; // You can customize this message
+    
+    // Broadcast the alert to all connected clients
+    req.broadcast({ type: 'alert', message });
+    
     console.log('Alert sent to:', subscribers.map(s => s.email));
     res.status(200).json({ message: 'Alert sent successfully', count: subscribers.length });
   } catch (error) {
