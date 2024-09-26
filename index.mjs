@@ -23,6 +23,9 @@ connectDB();
 
 app.use('/api/subscribe', subscribeRouter);
 app.use('/api/alert', alertRouter);
+app.use('/', (req, res) => {
+  res.send('Server is running').status(200);
+})
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
