@@ -26,13 +26,11 @@ const connectDB = async () => {
 
 connectDB();
 
-// WebSocket connection handler
 wss.on('connection', (ws) => {
   console.log('Client connected');
   ws.on('close', () => console.log('Client disconnected'));
 });
 
-// Broadcast function
 const broadcast = (message) => {
   wss.clients.forEach((client) => {
     client.send(JSON.stringify(message));
